@@ -1,0 +1,38 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-01-29 22:14:24
+ * @LastEditTime : 2020-01-29 22:28:43
+ * @LastEditors  : Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \MapReduce\HotspotAnalyzer\templates\index.html
+ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>查询页</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <link rel="stylesheet" href="./css/style.css">
+ 
+</head>
+<body>
+ 
+<div class="login-main">
+    <header class="layui-elip">论文方向热点查询</header>
+    <form class="layui-form" th:action="@{/articles}" method="get">
+        <div class="layui-input-inline">
+            <input type="text" name="hotspot" required lay-verify="required" placeholder="关键词" autocomplete="off"
+                   class="layui-input">
+        </div>
+        <div class="layui-input-inline login-btn">
+            <button lay-submit lay-filter="login" class="layui-btn">查询</button>
+        </div>
+        <hr/>
+    </form>
+</div>
+ 
+ 
+<script src="./layui/layui.js"></script>
+
+</body>
+</html>

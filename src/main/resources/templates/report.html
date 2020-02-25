@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Mapreduce第四组" />
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link type="text/css" rel="stylesheet" href="./layui/css/layui.css"  media="all">
+
+<title>方向热点分析报告</title>
+<script th:src="@{/js/echarts.min.js}" src="../static/js/echarts.min.js"></script>
+    <script src="./js/jquery-3.4.1.min.js"></script>
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type="text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+<h1 class="title toc-ignore">方向热点分析数据报告:<p th:text="${hotspot}"></p></h1>
+<h4 class="author"><em>Mapreduce第7组</em></h4>
+<h4 class="date"><em id = "time"></em></h4>
+</div>
+<script>
+document.getElementById('time').innerHTML = Date()
+</script>
+
+
+
+
+
+<div id="histogram" class="section level2">
+<h2>方向/领域热度图</h2>
+<div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '领域热度示例图'
+            },
+ tooltip: {},
+            legend: {
+                data:['文献数量']
+            },
+            xAxis: {
+                data: ["2000以前","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019"]
+            },
+            yAxis: {},
+            series: [{
+                name: '文献数量',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20, 30, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+</div>
+<div id="zmiana-dugosci-sledzi-w-czasie" class="section level2">
+<h2>方向/领域热门文章</h2>
+<em>我们根据对数据集中有关于该方向的引用热度进行整理和计算，显示该方向按照热度排序的文章列表</em>
+
+<table class="layui-hide" id="papers" lay-filter="papers"></table>
+              
+</div>
+<div id="regresor" class="section level2">
+<h2>方向/领域热门作者Top5</h2>
+<em>我们根据对数据集中每个作者在该方向的引用热度进行整理和计算，显示在该方向最活跃的5位作者</em>
+<table class="layui-hide" id="authors" lay-filter="authors"></table>
+              
+          
+<script src="./layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 --> 
+ 
+<script th:inline="none">
+layui.use('table', function(){
+  var table1 = layui.table;
+  var table2 = layui.table;
+  
+  table1.render({
+    elem: '#papers'
+    ,url:'/paperdata'
+    ,cols: [[
+      {field:'hot', width:120, title: '热度', sort: true}
+      ,{field:'name', width:550, title: '文章名'}
+      ,{field:'venue', minwidth:200, title: '会议名'}
+    ]]
+    ,page: true
+  });
+
+  table1.on('row(papers)', function(obj){
+    var data = obj.data;
+    var paper = JSON.stringify(data)
+    $.ajax({
+          type: "post",
+             url: "/paperdetails",
+             dataType: "json",
+             data: paper,
+             contentType : "application/json",
+             success: function (data) {
+                console.log(data)
+                location.href="/references"
+             },
+             error: function (e) {
+                 console.log(e)
+             }
+
+   });
+    //self.location.href="/references?"+"json="+encodeURI(JSON.stringify(data))
+    //标注选中样式
+    obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+  });
+
+  table2.render({
+    elem: '#authors'
+    ,url:'/authordata'
+    ,cols: [[
+      {field:'prScore', width:120, title: '热度', sort: true}
+      ,{field:'name', width:550, title: '作者名'}
+      ,{field:'org', minwidth:200, title: '联系方式'}
+    ]]
+    //,page: true
+  });
+});
+</script>
+
+
+</div>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</div>
+</body>
+</html>
