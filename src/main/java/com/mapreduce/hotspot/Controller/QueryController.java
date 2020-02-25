@@ -9,21 +9,19 @@
 package com.mapreduce.hotspot.Controller;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.Service.QueryService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 
 
 @Controller
@@ -31,9 +29,18 @@ public class QueryController {
     @Autowired
     private QueryService queryService;
     private String hotspot;
-    private String paperJSON;
+    private String paperName;
+    private JSONObject paperJSON;
     @RequestMapping(value = "/references")
-    public String reference(){
+    public String reference(ModelMap modelMap){
+        String paperName = paperJSON.getString("name");
+        String authors = paperJSON.getString("authors");
+        String venue = paperJSON.getString("venue");
+        String citaiton = paperJSON.getString("citation");
+        modelMap.addAttribute("name", paperName);
+        modelMap.addAttribute("authors", authors);
+        modelMap.addAttribute("venue", venue);
+        modelMap.addAttribute("citation", citaiton);
         return "references";
 
     }
@@ -61,10 +68,30 @@ public class QueryController {
         return queryService.listAuthor(hotspot);
     }
 
+    @RequestMapping(value="/authordetails",method = RequestMethod.POST)
+    @ResponseBody
+    public String Authordetails(@RequestParam(value="paper") String name, ModelMap modelMap) throws JSONException {
+        System.out.println(name);
+        paperJSON = JSON.parseObject(name);
+        return "ok";
+    }
+
     @RequestMapping(value="/paperdetails",method = RequestMethod.POST)
     @ResponseBody
-    public String Paperdetails(@RequestParam(value="paper") String paper, ModelMap modelMap) throws JSONException {
-        System.out.println(paper);
+    public String Paperdetails(@RequestParam(value="paper") String paperJSON, ModelMap modelMap) throws JSONException {
+        System.out.println(paperJSON);
+/*        paperName = JSON.parseObject(JSON.parseObject(paperJSON).getString("data")).getString("name");
+        System.out.println(paperName);
+        this.paperJSON = JSON.parseObject(queryService.paperDetails(paperName));*/
         return "ok";
+    }
+
+    @RequestMapping(value="/years",method = RequestMethod.GET)
+    @ResponseBody
+    public Object GetYears(){
+        int[] years = {5, 20, 36, 10, 10, 20, 30, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35};
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("year", years);
+        return map;
     }
 }

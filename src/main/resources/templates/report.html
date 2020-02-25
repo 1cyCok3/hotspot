@@ -119,10 +119,19 @@ document.getElementById('time').innerHTML = Date()
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById('main'));
 
+        $.ajax({
+            url: "/years",
+            async:false,
+           type: "get",
+           success: function f(data) {
+            data0 = data.year;
+            console.log(data0);
+             }
+         })
         // 指定图表的配置项和数据
         var option = {
             title: {
-                text: '领域热度示例图'
+                text: ''
             },
  tooltip: {},
             legend: {
@@ -135,7 +144,7 @@ document.getElementById('time').innerHTML = Date()
             series: [{
                 name: '文献数量',
                 type: 'bar',
-                data: [5, 20, 36, 10, 10, 20, 30, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+                data: data0
             }]
         };
 
@@ -186,7 +195,7 @@ layui.use('table', function(){
              contentType : "application/json",
              success: function (data) {
                 console.log(data)
-                location.href="/references"
+                self.location.href="/references"
              },
              error: function (e) {
                  console.log(e)
