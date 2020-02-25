@@ -118,10 +118,10 @@ button.code-folding-btn:focus {
 
   </script>
 <div class="fluid-row" id="header">
-<h1 class="title toc-ignore">文章标题</h1>
-<h4 class="author"><em>作者1，作者2，作者3</em></h4>
-<h4 class="date"><em>会议</em></h4>
-<h4 class="citationNumber"><em>被引次数：</em></h4>
+<h1 class="title toc-ignore" th:text="${name}"></h1>
+<h4 class="author" th:text="${authors}"><em></em></h4>
+<h4 class="date" th:text="${venue}"><em></em></h4>
+<h4 class="citationNumber"><em>被引次数：<p th:text="${citation}"></p></em></h4>
 </div>
 
 

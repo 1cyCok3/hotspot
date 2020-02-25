@@ -119,10 +119,19 @@ document.getElementById('time').innerHTML = Date()
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById('main'));
 
+        $.ajax({
+            url: "/years",
+            async:false,
+           type: "get",
+           success: function f(data) {
+            data0 = data.year;
+            console.log(data0);
+             }
+         })
         // 指定图表的配置项和数据
         var option = {
             title: {
-                text: '领域热度示例图'
+                text: ''
             },
  tooltip: {},
             legend: {
@@ -135,7 +144,7 @@ document.getElementById('time').innerHTML = Date()
             series: [{
                 name: '文献数量',
                 type: 'bar',
-                data: [5, 20, 36, 10, 10, 20, 30, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+                data: data0
             }]
         };
 
@@ -171,6 +180,7 @@ layui.use('table', function(){
       {field:'hot', width:120, title: '热度', sort: true}
       ,{field:'name', width:550, title: '文章名'}
       ,{field:'venue', minwidth:200, title: '会议名'}
+      ,{field:'id', minwidth:140, title: '文章编号'}
     ]]
     ,page: true
   });
@@ -186,7 +196,7 @@ layui.use('table', function(){
              contentType : "application/json",
              success: function (data) {
                 console.log(data)
-                location.href="/references"
+                self.location.href="/references"
              },
              error: function (e) {
                  console.log(e)
@@ -208,6 +218,30 @@ layui.use('table', function(){
     ]]
     //,page: true
   });
+  /*
+  table2.on('row(authors)', function(obj){
+    var data = obj.data;
+    var author = JSON.stringify(data)
+    $.ajax({
+          type: "post",
+             url: "/authordetails",
+             dataType: "json",
+             data: author,
+             contentType : "application/json",
+             success: function (data) {
+                console.log(data)
+                self.location.href="/authors"
+             },
+             error: function (e) {
+                 console.log(e)
+             }
+
+   });
+    //self.location.href="/references?"+"json="+encodeURI(JSON.stringify(data))
+    //标注选中样式
+    obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+  });
+  */
 });
 </script>
 

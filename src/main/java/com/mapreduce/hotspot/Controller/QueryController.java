@@ -9,21 +9,16 @@
 package com.mapreduce.hotspot.Controller;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.Service.QueryService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 
 
 @Controller
@@ -31,10 +26,34 @@ public class QueryController {
     @Autowired
     private QueryService queryService;
     private String hotspot;
-    private String paperJSON;
+    private String paperId;
+    private String authorName;
+    private JSONObject paperJSON;
+    private JSONObject authorJSON;
     @RequestMapping(value = "/references")
-    public String reference(){
+    public String reference(ModelMap modelMap){
+        String paperName = paperJSON.getString("name");
+        String authors = JSON.parseObject(paperJSON.getString("authors")).getString("name");
+        String venue = JSON.parseObject(paperJSON.getString("venue")).getString("raw");
+        String citation = paperJSON.getString("citationNumber");
+        modelMap.addAttribute("name", paperName);
+        modelMap.addAttribute("authors", authors);
+        modelMap.addAttribute("venue", venue);
+        modelMap.addAttribute("citationNumber", citation);
         return "references";
+
+    }
+    @RequestMapping(value = "/authors")
+    public String authors(ModelMap modelMap){
+        String paperName = paperJSON.getString("name");
+        String authors = paperJSON.getString("authors");
+        String venue = paperJSON.getString("venue");
+        String citaiton = paperJSON.getString("citation");
+        modelMap.addAttribute("name", paperName);
+        modelMap.addAttribute("authors", authors);
+        modelMap.addAttribute("venue", venue);
+        modelMap.addAttribute("citation", citaiton);
+        return "authors";
 
     }
 
@@ -50,8 +69,7 @@ public class QueryController {
     @RequestMapping("/paperdata")
     @ResponseBody
     public String PaperData() throws JSONException {
-        System.out.println(queryService.listArticle());
-        return queryService.listArticle();
+        return queryService.listPapers(hotspot);
     }
 
     @RequestMapping("/authordata")
@@ -61,10 +79,32 @@ public class QueryController {
         return queryService.listAuthor(hotspot);
     }
 
+    @RequestMapping(value="/authordetails",method = RequestMethod.POST)
+    @ResponseBody
+    public String Authordetails(@RequestBody String authorJSON) throws JSONException {
+        System.out.println(authorJSON);
+        authorName = JSON.parseObject(authorJSON).getString("name");
+        this.authorJSON = JSON.parseObject(queryService.authorDetails(authorName));
+        return "ok";
+    }
+
     @RequestMapping(value="/paperdetails",method = RequestMethod.POST)
     @ResponseBody
-    public String Paperdetails(@RequestParam(value="paper") String paper, ModelMap modelMap) throws JSONException {
-        System.out.println(paper);
-        return "ok";
+    public String Paperdetails(@RequestBody String paperJSON) throws JSONException {
+        System.out.println(paperJSON);
+        paperId = JSON.parseObject(paperJSON).getString("id");
+        System.out.println(paperId);
+        this.paperJSON = JSON.parseObject(queryService.paperDetails(paperId));
+        return paperJSON;
+    }
+
+    @RequestMapping(value="/years",method = RequestMethod.GET)
+    @ResponseBody
+    public Object GetYears(String hotspot){
+        String years = queryService.yearAnalysis(hotspot);
+        System.out.println(years);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("year", years);
+        return map;
     }
 }

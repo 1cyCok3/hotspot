@@ -1,40 +1,45 @@
 package com.mapreduce.hotspot.Service;
 
 
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
-import com.mapreduce.hotspot.Model.Author;
-import com.mapreduce.hotspot.util.HBaseConnector;
-
 import com.alibaba.fastjson.JSONObject;
-
+import com.mapreduce.hotspot.util.HBaseConnector;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class QueryService {
-    HBaseConnector hbc = new HBaseConnector();
-    public String listArticle() throws JSONException {
-        JSONArray json = new JSONArray();
-        JSONObject jo = new JSONObject();
-        jo.put("venue", "测试数据测试数据");
-        jo.put("name", "测试数据测试数据");
-        jo.put("hot", 2.33);
-        json.add(jo);
-        JSONObject jobj = new JSONObject();
-        jobj.put("code",0);
-        jobj.put("msg","");
-        jobj.put("count", 1);
-        jobj.put("data",json);
-        System.out.println(jobj.toString());
-        return jobj.toString();
+    HBaseConnector hbc = new HBaseConnector ();
+    public String listPapers(String hotspot) throws JSONException {
+        String[] keywords = hotspot.split(" ");
+        JSONObject papers = HBaseConnector.getTopArticles(keywords);
+        String venue = JSON.parseObject(papers.getString("venue")).getString("raw");
+        papers.put("venue", venue);
+        return papers.toString();
     }
-
+    public String paperDetails(String paeprId){
+        JSONObject paperDetails = HBaseConnector.getDetailedArticleInfoById(paeprId);
+        return paperDetails.getString("data");
+    }
     public String listAuthor(String hotspot){
         String[] keywords = hotspot.split(" ");
-        JSONObject authors = hbc.getTopAuthors(keywords);
+        JSONObject authors = HBaseConnector.getTopAuthors(keywords);
         return authors.toString();
     }
 
+    public String authorDetails(String authorName) {
+        JSONObject author = new JSONObject();
+        author.put("name", authorName);
+        author.put("org", "NJU");
+        author.put("field", "machine learning");
+        author.put("prScore", "2.77");
+        return author.toString();
+    }
+
+    public String yearAnalysis(String hotspot){
+        String[] keywords = hotspot.split(" ");
+        JSONObject years = HBaseConnector.getYearAnalysis(keywords);
+        String result = years.getString("data");
+        return result;
+    }
 }
