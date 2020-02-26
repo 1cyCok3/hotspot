@@ -97,7 +97,7 @@ button.code-folding-btn:focus {
 <h1 class="title toc-ignore" th:text="${name}"></h1>
 <h4 class="author" th:text="${authors}"><em></em></h4>
 <h4 class="date" th:text="${venue}"><em></em></h4>
-<h4 class="citationNumber"><em>被引次数：<p th:text="${citation}"></p></em></h4>
+<h4 class="citationNumber"><em>被引次数：<p th:text="${citationNumber}"></p></em></h4>
 </div>
 
 
@@ -124,8 +124,8 @@ layui.use('table', function(){
     elem: '#referencedBy'
     ,url:'/referencedBy'
     ,cols: [[
-      {field:'id', width:120, title: '热度', sort: true}
-      ,{field:'username', width:550, title: '文章名'}
+      {field:'hot', width:120, title: '热度', sort: true}
+      ,{field:'name', width:550, title: '文章名'}
       ,{field:'venue', minwidth:200, title: '会议名'}
       ,{field:'id', minwidth:140, title: '文章编号'}
     ]]
@@ -136,8 +136,8 @@ layui.use('table', function(){
     elem: '#references'
     ,url:'/reference'
     ,cols: [[
-      {field:'id', width:120, title: '热度', sort: true}
-      ,{field:'username', width:550, title: '文章名'}
+      {field:'hot', width:120, title: '热度', sort: true}
+      ,{field:'name', width:550, title: '文章名'}
       ,{field:'venue', minwidth:200, title: '会议名'}
       ,{field:'id', minwidth:140, title: '文章编号'}
     ]]

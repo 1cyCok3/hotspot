@@ -1,7 +1,6 @@
 package com.mapreduce.hotspot.Service;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.util.HBaseConnector;
@@ -13,10 +12,10 @@ public class QueryService {
     public String listPapers(String hotspot) throws JSONException {
         String[] keywords = hotspot.split(" ");
         JSONObject papers = HBaseConnector.getTopArticles(keywords);
-        String venue = JSON.parseObject(papers.getString("venue")).getString("raw");
+/*        String venue = papers.parseArray("venue").getJSONObject(2).toString();;
         System.out.println(venue);
         papers.remove("venue");
-        papers.put("venue", venue);
+        papers.put("venue", venue);*/
         return papers.toString();
     }
     public String paperDetails(String paeprId){
@@ -29,14 +28,6 @@ public class QueryService {
         return authors.toString();
     }
 
-    public String authorDetails(String authorName) {
-        JSONObject author = new JSONObject();
-        author.put("name", authorName);
-        author.put("org", "NJU");
-        author.put("field", "machine learning");
-        author.put("prScore", "2.77");
-        return author.toString();
-    }
 
     public String yearAnalysis(String hotspot){
         String[] keywords = hotspot.split(" ");

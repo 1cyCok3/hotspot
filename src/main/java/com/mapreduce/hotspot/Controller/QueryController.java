@@ -32,28 +32,16 @@ public class QueryController {
     private JSONObject authorJSON;
     @RequestMapping(value = "/references")
     public String reference(ModelMap modelMap){
-        String paperName = paperJSON.getString("name");
-        String authors = JSON.parseObject(paperJSON.getString("authors")).getString("name");
-        String venue = JSON.parseObject(paperJSON.getString("venue")).getString("raw");
+        String paperName = paperJSON.getString("title");
+        String authors = paperJSON.getString("authors");
+        String venue = paperJSON.getString("venue");
         String citation = paperJSON.getString("citationNumber");
         modelMap.addAttribute("name", paperName);
         modelMap.addAttribute("authors", authors);
         modelMap.addAttribute("venue", venue);
         modelMap.addAttribute("citationNumber", citation);
+        System.out.println(modelMap);
         return "references";
-    }
-    @RequestMapping(value = "/authors")
-    public String authors(ModelMap modelMap){
-        String paperName = paperJSON.getString("name");
-        String authors = paperJSON.getString("authors");
-        String venue = paperJSON.getString("venue");
-        String citaiton = paperJSON.getString("citation");
-        modelMap.addAttribute("name", paperName);
-        modelMap.addAttribute("authors", authors);
-        modelMap.addAttribute("venue", venue);
-        modelMap.addAttribute("citation", citaiton);
-        return "authors";
-
     }
 
     @RequestMapping(value = "/articles",method = RequestMethod.GET)
@@ -78,15 +66,6 @@ public class QueryController {
         return queryService.listAuthor(hotspot);
     }
 
-    @RequestMapping(value="/authordetails",method = RequestMethod.POST)
-    @ResponseBody
-    public String Authordetails(@RequestBody String authorJSON) throws JSONException {
-        System.out.println(authorJSON);
-        authorName = JSON.parseObject(authorJSON).getString("name");
-        this.authorJSON = JSON.parseObject(queryService.authorDetails(authorName));
-        return "ok";
-    }
-
     @RequestMapping(value="/paperdetails",method = RequestMethod.POST)
     @ResponseBody
     public String Paperdetails(@RequestBody String paperJSON) throws JSONException {
@@ -94,14 +73,14 @@ public class QueryController {
         paperId = JSON.parseObject(paperJSON).getString("id");
         System.out.println(paperId);
         this.paperJSON = JSON.parseObject(queryService.paperDetails(paperId));
-        return paperJSON;
+        return this.paperJSON.toString();
     }
 
     @RequestMapping(value="/years",method = RequestMethod.GET)
     @ResponseBody
-    public Object GetYears(String hotspot){
+    public Object GetYears(){
         String years = queryService.yearAnalysis(hotspot);
-        System.out.println(years);
+        System.out.println(hotspot);
         HashMap<Object, Object> map = new HashMap<>();
         map.put("year", years);
         return map;
