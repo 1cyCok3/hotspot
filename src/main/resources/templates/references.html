@@ -93,30 +93,6 @@ button.code-folding-btn:focus {
 
 <div class="container-fluid main-container">
 
-    <script language="javascript" type="text/javascript">
-    function readData(){
-     var loc = location.href;
-     var n1 = loc.length;//地址的总长度
-     var n2 = loc.indexOf("=");//取得=号的位置
-     var id = decodeURI(loc.substr(n2+1, n1-n2));//从=号后面的内容
-     //document.write(id)
-     $.ajax({
-          type: "post",
-             url: "/paperdetails",
-             dataType: "json",
-             data: JSON.stringify(id),
-             contentType : "application/json",
-             success: function (data) {
-                console.log(data)
-             },
-             error: function (e) {
-                 console.log(e)
-             }
-         }
-   });
-    }
-
-  </script>
 <div class="fluid-row" id="header">
 <h1 class="title toc-ignore" th:text="${name}"></h1>
 <h4 class="author" th:text="${authors}"><em></em></h4>

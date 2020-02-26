@@ -107,10 +107,26 @@ public class QueryController {
         return map;
     }
 
-/*    @RequestMapping("/referencedBy")
+    @RequestMapping("/reference")
     @ResponseBody
-    public String ReferencedBy() throws JSONException {
-        String data = paperJSON.getString("referencedBy");
+    public String reference() throws JSONException {
+        String data = paperJSON.getString("references");
+        JSONObject ret = new JSONObject();
+        ret.put("code", 0);
+        ret.put("msg", "");
+        ret.put("data", data);
+        return ret.toString();
+    }
 
-    }*/
+    @RequestMapping("/referencedBy")
+    @ResponseBody
+    public String referencedBy() throws JSONException {
+        String data = paperJSON.getString("referencedBy");
+        JSONObject ret = new JSONObject();
+        ret.put("code", 0);
+        ret.put("msg", "");
+        ret.put("data", data);
+        return ret.toString();
+    }
+
 }
