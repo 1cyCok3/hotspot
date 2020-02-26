@@ -122,22 +122,24 @@ layui.use('table', function(){
   var table2 = layui.table;
   table1.render({
     elem: '#referencedBy'
-    ,url:'demo.json'
+    ,url:'/referencedBy'
     ,cols: [[
       {field:'id', width:120, title: '热度', sort: true}
       ,{field:'username', width:550, title: '文章名'}
-      ,{field:'sex', minwidth:200, title: '会议名'}
+      ,{field:'venue', minwidth:200, title: '会议名'}
+      ,{field:'id', minwidth:140, title: '文章编号'}
     ]]
     ,page: true
   });
 
   table2.render({
     elem: '#references'
-    ,url:'demo.json'
+    ,url:'/reference'
     ,cols: [[
       {field:'id', width:120, title: '热度', sort: true}
       ,{field:'username', width:550, title: '文章名'}
-      ,{field:'sex', minwidth:200, title: '会议名'}
+      ,{field:'venue', minwidth:200, title: '会议名'}
+      ,{field:'id', minwidth:140, title: '文章编号'}
     ]]
     ,page: true
   });
