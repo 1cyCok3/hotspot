@@ -14,6 +14,7 @@ public class QueryService {
         String[] keywords = hotspot.split(" ");
         JSONObject papers = HBaseConnector.getTopArticles(keywords);
         String venue = JSON.parseObject(papers.getString("venue")).getString("raw");
+        System.out.println(venue);
         papers.put("venue", venue);
         return papers.toString();
     }
@@ -39,6 +40,7 @@ public class QueryService {
     public String yearAnalysis(String hotspot){
         String[] keywords = hotspot.split(" ");
         JSONObject years = HBaseConnector.getYearAnalysis(keywords);
+        System.out.println(years);
         String result = years.getString("data");
         return result;
     }

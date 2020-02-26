@@ -41,7 +41,6 @@ public class QueryController {
         modelMap.addAttribute("venue", venue);
         modelMap.addAttribute("citationNumber", citation);
         return "references";
-
     }
     @RequestMapping(value = "/authors")
     public String authors(ModelMap modelMap){
@@ -107,4 +106,11 @@ public class QueryController {
         map.put("year", years);
         return map;
     }
+
+/*    @RequestMapping("/referencedBy")
+    @ResponseBody
+    public String ReferencedBy() throws JSONException {
+        String data = paperJSON.getString("referencedBy");
+
+    }*/
 }
