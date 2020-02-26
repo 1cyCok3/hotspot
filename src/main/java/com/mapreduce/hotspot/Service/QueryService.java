@@ -12,7 +12,8 @@ public class QueryService {
     public String listPapers(String hotspot) throws JSONException {
         String[] keywords = hotspot.split(" ");
         JSONObject papers = HBaseConnector.getTopArticles(keywords);
-/*        String venue = papers.parseArray("venue").getJSONObject(2).toString();;
+/*        JSONObject venueData = JSONObject.parseObject(papers.getString("venue"));
+        String venue = venueData.getString("raw");
         System.out.println(venue);
         papers.remove("venue");
         papers.put("venue", venue);*/

@@ -10,6 +10,7 @@ package com.mapreduce.hotspot.Controller;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.Service.QueryService;
@@ -27,14 +28,18 @@ public class QueryController {
     private QueryService queryService;
     private String hotspot;
     private String paperId;
-    private String authorName;
     private JSONObject paperJSON;
-    private JSONObject authorJSON;
     @RequestMapping(value = "/references")
     public String reference(ModelMap modelMap){
         String paperName = paperJSON.getString("title");
-        String authors = paperJSON.getString("authors");
-        String venue = paperJSON.getString("venue");
+        JSONArray authorData = JSONArray.parseArray(paperJSON.getString("authors"));
+        String authors = "";
+        for(int i = 0 ; i < authorData.size() ; i++){
+            authors += JSONObject.parseObject(authorData.get(i).toString()).getString("name");
+            if(i!= authorData.size()-1) authors += ", ";
+        }
+        JSONObject venueData = JSONObject.parseObject(paperJSON.getString("venue"));
+        String venue = venueData.getString("raw");
         String citation = paperJSON.getString("citationNumber");
         modelMap.addAttribute("name", paperName);
         modelMap.addAttribute("authors", authors);
@@ -80,7 +85,8 @@ public class QueryController {
     @ResponseBody
     public Object GetYears(){
         String years = queryService.yearAnalysis(hotspot);
-        System.out.println(hotspot);
+        years = years.replaceAll("\"","");
+        System.out.println(years);
         HashMap<Object, Object> map = new HashMap<>();
         map.put("year", years);
         return map;
@@ -89,10 +95,11 @@ public class QueryController {
     @RequestMapping("/reference")
     @ResponseBody
     public String reference() throws JSONException {
-        String data = paperJSON.getString("references");
+        JSONArray data = paperJSON.getJSONArray("references");
         JSONObject ret = new JSONObject();
         ret.put("code", 0);
         ret.put("msg", "");
+        ret.put("count", data.size());
         ret.put("data", data);
         return ret.toString();
     }
@@ -100,10 +107,11 @@ public class QueryController {
     @RequestMapping("/referencedBy")
     @ResponseBody
     public String referencedBy() throws JSONException {
-        String data = paperJSON.getString("referencedBy");
+        JSONArray data = paperJSON.getJSONArray("referencedBy");
         JSONObject ret = new JSONObject();
         ret.put("code", 0);
         ret.put("msg", "");
+        ret.put("count", data.size());
         ret.put("data", data);
         return ret.toString();
     }

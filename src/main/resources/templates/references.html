@@ -95,9 +95,9 @@ button.code-folding-btn:focus {
 
 <div class="fluid-row" id="header">
 <h1 class="title toc-ignore" th:text="${name}"></h1>
-<h4 class="author" th:text="${authors}"><em></em></h4>
-<h4 class="date" th:text="${venue}"><em></em></h4>
-<h4 class="citationNumber"><em>被引次数：<p th:text="${citationNumber}"></p></em></h4>
+<h4 class="author" >作者：<em th:text="${authors}"></em></h4>
+<h4 class="date" >出处：<em th:text="${venue}"></em></h4>
+<h4 class="citationNumber">被引次数：<em th:text="${citationNumber}"></em></h4>
 </div>
 
 
@@ -131,7 +131,24 @@ layui.use('table', function(){
     ]]
     ,page: true
   });
+  table1.on('row(referencedBy)', function(obj){
+    var data = obj.data;
+    var paper = JSON.stringify(data)
+    $.ajax({
+          type: "post",
+             url: "/paperdetails",
+             dataType: "json",
+             data: paper,
+             contentType : "application/json",
+             success: function (data) {
+                console.log(data)
+                self.location.href="/references"
+             },
+             error: function (e) {
+                 console.log(e)
+             }
 
+   });
   table2.render({
     elem: '#references'
     ,url:'/reference'
@@ -143,6 +160,7 @@ layui.use('table', function(){
     ]]
     ,page: true
   });
+
 });
 </script>
 
