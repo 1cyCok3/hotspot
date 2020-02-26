@@ -132,6 +132,29 @@ layui.use('table', function(){
     ,page: true
   });
 
+  table1.on('row(referencedBy)', function(obj){
+    var data = obj.data;
+    var paper = JSON.stringify(data)
+    $.ajax({
+          type: "post",
+             url: "/paperdetails",
+             dataType: "json",
+             data: paper,
+             contentType : "application/json",
+             success: function (data) {
+                console.log(data)
+                self.location.href="/references"
+             },
+             error: function (e) {
+                 console.log(e)
+             }
+
+   });
+    //self.location.href="/references?"+"json="+encodeURI(JSON.stringify(data))
+    //标注选中样式
+    obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+  });
+
   table2.render({
     elem: '#references'
     ,url:'/reference'
@@ -142,6 +165,28 @@ layui.use('table', function(){
       ,{field:'id', minwidth:140, title: '文章编号'}
     ]]
     ,page: true
+  });
+  table2.on('row(references)', function(obj){
+    var data = obj.data;
+    var paper = JSON.stringify(data)
+    $.ajax({
+          type: "post",
+             url: "/paperdetails",
+             dataType: "json",
+             data: paper,
+             contentType : "application/json",
+             success: function (data) {
+                console.log(data)
+                self.location.href="/references"
+             },
+             error: function (e) {
+                 console.log(e)
+             }
+
+   });
+    //self.location.href="/references?"+"json="+encodeURI(JSON.stringify(data))
+    //标注选中样式
+    obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
   });
 });
 </script>
