@@ -15,6 +15,7 @@ public class QueryService {
         JSONObject papers = HBaseConnector.getTopArticles(keywords);
         String venue = JSON.parseObject(papers.getString("venue")).getString("raw");
         System.out.println(venue);
+        papers.remove("venue");
         papers.put("venue", venue);
         return papers.toString();
     }
