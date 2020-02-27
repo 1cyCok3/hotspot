@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -154,8 +153,9 @@ public class HBaseConnector {
         JSONObject ret = new JSONObject();
         ret.put("code", 0);
         ret.put("msg", "");
-        ret.put("count", _getTopAuthors(data).size());
-        ret.put("data", _getTopAuthors(data));
+        JSONArray authorsData = _getTopAuthors(data);
+        ret.put("count", authorsData.size());
+        ret.put("data", authorsData);
         return ret;
     }
 
@@ -240,8 +240,14 @@ public class HBaseConnector {
             article.put("citationNumber", _cleanNullValue(resMap.get(Bytes.toBytes("citationNumber")), "0"));
             article.put("fieldOfStudy", _cleanNullValue(resMap.get(Bytes.toBytes("fieldOfStudy")), new JSONArray().toString()));
             article.put("doi", _cleanNullValue(resMap.get(Bytes.toBytes("doi")), ""));
-            Random random = new Random();
-            article.put("hot", String.format("%.2f", random.nextDouble() * 100));
+
+            //get pagerank score in column "family3:score"
+            byte[] tempScore = result.getValue(Bytes.toBytes("family3"), Bytes.toBytes("score"));
+            double score = 15.0;
+            if (tempScore != null) {
+                score = Double.parseDouble(Bytes.toString(tempScore));
+            }
+            article.put("hot", String.format("%.2f", score));
 
             JSONArray referencesIds = JSONArray.parseArray(Bytes.toString(resMap.get(Bytes.toBytes("references"))));
             if (referencesIds != null) {
@@ -371,7 +377,7 @@ public class HBaseConnector {
         try {
             Connection conn = HBaseConnectionManager.getConnection();
             Table table = conn.getTable(TableName.valueOf(TABLE_NAME));
-            List<Get> gets = ids.parallelStream().map(id -> new Get(Bytes.toBytes(id)).addFamily(Bytes.toBytes(COLUMN_FAMILY))).collect(Collectors.toList());
+            List<Get> gets = ids.parallelStream().map(id -> new Get(Bytes.toBytes(id))).collect(Collectors.toList());
             Result[] results = table.get(gets);
             for (Result res: results) {
                 NavigableMap<byte[], byte[]> resMap = res.getFamilyMap(Bytes.toBytes(COLUMN_FAMILY));
@@ -389,14 +395,16 @@ public class HBaseConnector {
 
                 String artVenue = venueObj.toString();
                 String artAuthors = _cleanNullValue(resMap.get(Bytes.toBytes("authors")), new JSONArray().toString());
-                //todo resMap.get("pagerank")
+                byte[] tempScore = res.getValue(Bytes.toBytes("family3"), Bytes.toBytes("score"));
+                double score = 15;
+                if (tempScore != null) {
+                    score = Double.parseDouble(Bytes.toString(tempScore));
+                }
                 jsonObject.put("id", artId);
                 jsonObject.put("name", artTitle);
                 jsonObject.put("venue", artVenue);
                 jsonObject.put("authors", artAuthors);
-                //todo jsonObject.put("hot", pagerankScore);
-                Random random = new Random();
-                jsonObject.put("hot", String.format("%.2f", random.nextDouble() * 100.0));
+                jsonObject.put("hot", String.format("%.2f", score));
                 ret.add(jsonObject);
             }
         } catch (IOException e) {
@@ -439,8 +447,7 @@ public class HBaseConnector {
         for (Object obj: data) {
             JSONArray authors = JSONArray.parseArray(((JSONObject) obj).getString("authors"));
 
-            Double prScore = 1.0;
-            //todo Double prScore = ((JSONObject) obj).getDouble("hot");
+            Double prScore = Double.parseDouble(((JSONObject) obj).getString("hot"));
             Double weight = 0.8;
             for (Object authorObj: authors) {
                 JSONObject authorJO = (JSONObject)authorObj;
@@ -462,13 +469,14 @@ public class HBaseConnector {
             }
         }).collect(Collectors.toList());
         JSONArray ret = new JSONArray();
-        final int TOP_AUTHOR_NUM = Math.min(10, list.size());;
+        final int TOP_AUTHOR_NUM = Math.min(5, list.size());
+        ;
         for (int i = 0;i < TOP_AUTHOR_NUM;i++) {
             JSONObject info = author2infoMap.get(list.get(i).getKey());
             info.putIfAbsent("id", "");
             info.putIfAbsent("name", "");
             info.putIfAbsent("org", "");
-            info.put("prScore", list.get(i).getValue());
+            info.put("prScore", String.format("%.2f", list.get(i).getValue()));
             ret.add(info);
         }
         return ret;
