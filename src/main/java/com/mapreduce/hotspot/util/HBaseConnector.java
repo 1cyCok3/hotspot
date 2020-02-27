@@ -393,7 +393,7 @@ public class HBaseConnector {
                 venueObj.putIfAbsent("id", "");
                 venueObj.putIfAbsent("raw", "");
 
-                String artVenue = venueObj.toString();
+                String artVenue = venueObj.getString("raw");
                 String artAuthors = _cleanNullValue(resMap.get(Bytes.toBytes("authors")), new JSONArray().toString());
                 byte[] tempScore = res.getValue(Bytes.toBytes("family3"), Bytes.toBytes("score"));
                 double score = 15;
