@@ -1,16 +1,13 @@
 package com.mapreduce.hotspot.util;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -19,28 +16,30 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
 public class HBaseConnector {
 
     private static Configuration conf = null;
+    public static final int CACHE_CAPACITY = 10;
+    private static MapCache<Set<String>, Set<String>> articleIdCache;
+
     static {
         conf = HBaseConfiguration.create();
         conf.set(HConstants.ZOOKEEPER_QUORUM, "master001,slave002,slave003");
+        articleIdCache = new MapCache<>(CACHE_CAPACITY);
     }
 
     public static void main(String[] args) {
@@ -61,6 +60,38 @@ public class HBaseConnector {
                 System.out.println(String.format("\ntakes %d ms", System.currentTimeMillis() - curTime));
                 break;
         }
+    }
+
+    public static JSONObject getPagedTopArticles(String[] keywords, int page, int limit) {
+        assert page > 0 && limit > 0;
+        Set<String> ans;
+        Set<String> keys = new HashSet<>(Arrays.asList(keywords));
+        ans = articleIdCache.get(keys);
+        if (ans == null) {
+            //cache miss
+            ans = _getIdsByMultiKeywords(keywords);
+            articleIdCache.put(keys, ans);
+        }
+        ArrayList<String> arr = new ArrayList<>(ans);
+        List<String> retArr = new LinkedList<>();
+        int end = Math.min(arr.size(), page * limit);
+        for (int i = (page - 1) * limit; i < end; i++) {
+            retArr.add(arr.get(i));
+        }
+        if (retArr.size() == 0) {
+            JSONObject ret = new JSONObject();
+            ret.put("code", HCConstants.ERROR_NO_RECORD_FOUND);
+            ret.put("msg", "");
+            ret.put("count", arr.size());
+            return ret;
+        }
+        JSONArray data = _getArticleMainInfoById(retArr);
+        JSONObject ret = new JSONObject();
+        ret.put("code", 0);
+        ret.put("msg", "");
+        ret.put("count", arr.size());
+        ret.put("data", data);
+        return ret;
     }
 
 
@@ -108,6 +139,7 @@ public class HBaseConnector {
         ret.put("data", data);
         return ret;
     }
+
     public static JSONObject getTopAuthors(String[] keywords){
         Set<String> ans = _getIdsByMultiKeywords(keywords);
         if (ans.size() == 0) {
@@ -301,7 +333,7 @@ public class HBaseConnector {
     }
 
     private static Set<String> _getIdsByMultiKeywords(String[] keywords) {
-        Set<String> ans = new HashSet<>();
+        Set<String> ans = new LinkedHashSet<>();
         //主关键字结果
         String[] ids = _getAllArticleIds(keywords[0]);
         if (ids == null) {
@@ -311,10 +343,10 @@ public class HBaseConnector {
         //获取副关键词结果
         Map<String, Set<String>> paraKeywordsMap = new HashMap<>();
         for (String keyword: keywords) {
-            if (keyword == keywords[0]) continue;
+            if (keyword.equals(keywords[0])) continue;
             String[] paraKeywordsIds = _getAllArticleIds(keyword);
             if (paraKeywordsIds == null) continue;
-            paraKeywordsMap.put(keyword, new HashSet<>(Arrays.asList(paraKeywordsIds)));
+            paraKeywordsMap.put(keyword, new LinkedHashSet<>(Arrays.asList(paraKeywordsIds)));
         }
 
         //找到包含全部关键词的文章ID

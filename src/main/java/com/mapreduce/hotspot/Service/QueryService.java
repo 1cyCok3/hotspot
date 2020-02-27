@@ -4,14 +4,17 @@ package com.mapreduce.hotspot.Service;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.util.HBaseConnector;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class QueryService {
     HBaseConnector hbc = new HBaseConnector ();
-    public String listPapers(String hotspot) throws JSONException {
+
+    public String listPapers(String hotspot, int page, int limit) throws JSONException {
         String[] keywords = hotspot.split(" ");
-        JSONObject papers = HBaseConnector.getTopArticles(keywords);
+//        JSONObject papers = HBaseConnector.getTopArticles(keywords);
+        JSONObject papers = HBaseConnector.getPagedTopArticles(keywords, page, limit);
 /*        JSONObject venueData = JSONObject.parseObject(papers.getString("venue"));
         String venue = venueData.getString("raw");
         System.out.println(venue);

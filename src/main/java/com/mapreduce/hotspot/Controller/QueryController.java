@@ -14,10 +14,15 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.mapreduce.hotspot.Service.QueryService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
 
@@ -60,8 +65,9 @@ public class QueryController {
     }
     @RequestMapping("/paperdata")
     @ResponseBody
-    public String PaperData() throws JSONException {
-        return queryService.listPapers(hotspot);
+    public String PaperData(@RequestParam(value = "page", defaultValue = "1") int page,
+                            @RequestParam(value = "limit", defaultValue = "10") int limit) throws JSONException {
+        return queryService.listPapers(hotspot, page, limit);
     }
 
     @RequestMapping("/authordata")
