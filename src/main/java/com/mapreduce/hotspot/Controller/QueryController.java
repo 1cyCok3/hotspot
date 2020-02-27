@@ -57,7 +57,7 @@ public class QueryController {
     @RequestMapping(value = "/articles",method = RequestMethod.GET)
     public String login(@RequestParam(value = "hotspot", required = false) String hotspot,
                         ModelMap modelMap){
-        this.hotspot = hotspot;
+        this.hotspot = hotspot.toLowerCase();
         System.out.println("关键词="+hotspot);
         modelMap.addAttribute("hotspot",hotspot);
         return "report";
@@ -100,26 +100,16 @@ public class QueryController {
 
     @RequestMapping("/reference")
     @ResponseBody
-    public String reference() throws JSONException {
-        JSONArray data = paperJSON.getJSONArray("references");
-        JSONObject ret = new JSONObject();
-        ret.put("code", 0);
-        ret.put("msg", "");
-        ret.put("count", data.size());
-        ret.put("data", data);
-        return ret.toString();
+    public String reference(@RequestParam(value = "page", defaultValue = "1") int page,
+                            @RequestParam(value = "limit", defaultValue = "10") int limit) throws JSONException {
+        return queryService.listPaperReferences(paperJSON, page, limit);
     }
 
     @RequestMapping("/referencedBy")
     @ResponseBody
-    public String referencedBy() throws JSONException {
-        JSONArray data = paperJSON.getJSONArray("referencedBy");
-        JSONObject ret = new JSONObject();
-        ret.put("code", 0);
-        ret.put("msg", "");
-        ret.put("count", data.size());
-        ret.put("data", data);
-        return ret.toString();
+    public String referencedBy(@RequestParam(value = "page", defaultValue = "1") int page,
+                               @RequestParam(value = "limit", defaultValue = "10") int limit) throws JSONException {
+        return queryService.listPaperReferencedBys(paperJSON, page, limit);
     }
 
 }

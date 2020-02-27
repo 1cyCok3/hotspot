@@ -33,12 +33,14 @@ public class HBaseConnector {
 
     private static Configuration conf = null;
     public static final int CACHE_CAPACITY = 10;
-    private static MapCache<Set<String>, Set<String>> articleIdCache;
+    private static MapCache<Set<String>, Set<String>> keywords2ArticleIdCache;
+    private static MapCache<String, Set<String>> articleId2ReferIdCache;
 
     static {
         conf = HBaseConfiguration.create();
         conf.set(HConstants.ZOOKEEPER_QUORUM, "master001,slave002,slave003");
-        articleIdCache = new MapCache<>(CACHE_CAPACITY);
+        keywords2ArticleIdCache = new MapCache<>(CACHE_CAPACITY);
+        articleId2ReferIdCache = new MapCache<>(CACHE_CAPACITY);
     }
 
     public static void main(String[] args) {
@@ -65,11 +67,11 @@ public class HBaseConnector {
         assert page > 0 && limit > 0;
         Set<String> ans;
         Set<String> keys = new HashSet<>(Arrays.asList(keywords));
-        ans = articleIdCache.get(keys);
+        ans = keywords2ArticleIdCache.get(keys);
         if (ans == null) {
             //cache miss
             ans = _getIdsByMultiKeywords(keywords);
-            articleIdCache.put(keys, ans);
+            keywords2ArticleIdCache.put(keys, ans);
         }
         ArrayList<String> arr = new ArrayList<>(ans);
         List<String> retArr = new LinkedList<>();
@@ -93,6 +95,29 @@ public class HBaseConnector {
         return ret;
     }
 
+    public static JSONObject getPagedReference(JSONObject articleJO, int page, int limit, boolean referencedBy) {
+        assert page > 0 && limit > 0;
+        String articleIdSuffix = referencedBy ? "1" : "0";
+        String articleId = articleJO.getString("id") + "_" + articleIdSuffix;
+        JSONArray referIds = null;
+        if (referencedBy) {
+            referIds = articleJO.getJSONArray("referencedBy");
+        } else {
+            referIds = articleJO.getJSONArray("references");
+        }
+        List<String> idsList = new LinkedList<>();
+        int end = Math.min(page * limit, referIds.size());
+        for (int i = (page - 1) * limit; i < end; i++) {
+            idsList.add((String) referIds.get(i));
+        }
+        JSONArray data = _getArticleMainInfoById(idsList);
+        JSONObject ret = new JSONObject();
+        ret.put("code", 0);
+        ret.put("msg", "");
+        ret.put("count", referIds.size());
+        ret.put("data", data);
+        return ret;
+    }
 
     /**
      * @param keywords 搜索的多个关键字 例如输入框中输入deep learning则为一个2个元素的数组["deep", "learning"]
@@ -234,6 +259,7 @@ public class HBaseConnector {
             }
             venueObj.putIfAbsent("id", "");
             venueObj.putIfAbsent("raw", "");
+            article.put("id", id);
             article.put("venue", venueObj);
             article.put("year", _cleanNullValue(resMap.get(Bytes.toBytes("year")), ""));
             article.put("abstractWords", _cleanNullValue(resMap.get(Bytes.toBytes("abstractWords")), new JSONArray().toString()));
@@ -251,14 +277,14 @@ public class HBaseConnector {
 
             JSONArray referencesIds = JSONArray.parseArray(Bytes.toString(resMap.get(Bytes.toBytes("references"))));
             if (referencesIds != null) {
-                article.put("references", _getArticleMainInfoById(referencesIds.toJavaList(String.class)));
+                article.put("references", referencesIds);
             }
             article.putIfAbsent("references", new JSONArray());
 
             if (result.containsColumn(Bytes.toBytes("referencedByFamily"), Bytes.toBytes(""))) {
                 JSONArray byReferIds = JSONArray.parseArray(Bytes.toString(result.getValue(Bytes.toBytes("referencedByFamily"), Bytes.toBytes(""))));
                 if (byReferIds != null) {
-                    article.put("referencedBy", _getArticleMainInfoById(byReferIds.toJavaList(String.class)));
+                    article.put("referencedBy", byReferIds);
                 }
             }
             //给定referencedBy的默认值为空数组

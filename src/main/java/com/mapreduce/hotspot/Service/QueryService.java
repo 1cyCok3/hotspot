@@ -32,6 +32,17 @@ public class QueryService {
         return authors.toString();
     }
 
+    public String listPaperReferences(JSONObject articleJO, int page, int limit) {
+        JSONObject refers = HBaseConnector.getPagedReference(articleJO, page, limit, false);
+        return refers.toString();
+    }
+
+    public String listPaperReferencedBys(JSONObject articleJO, int page, int limit) {
+        JSONObject refers = HBaseConnector.getPagedReference(articleJO, page, limit, true);
+        return refers.toString();
+    }
+
+
 
     public String yearAnalysis(String hotspot){
         String[] keywords = hotspot.split(" ");
